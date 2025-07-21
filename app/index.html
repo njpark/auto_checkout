@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Auto Checkout App</title>
+  <style>
+    body { background-color: pink; }
+    #applist { font-size: 15px; }
+  </style>
+</head>
+<body onload="init();">
+  <h1>Auto Checkout App is loading...</h1>
+  <p id="applist"></p>
+
+  <!-- Load IDCAP SDK logic from external file -->
+  <script src="idcap.js"></script>
+  <script>
+    // --- Auto Checkout App Logic ---
+
+    let millisTillCheckout = 0;
+    let hour = 99;
+    let min = 0;
+    let debugOption = "off";
+
+    // Get current security level setting from IDCAP
+    const getCurrentSetting = () => {
+      idcap.request("idcap://configuration/property/get", {
+        parameters: { key: "security_level" },
+        onSuccess: function (cbObject) {
+          document.getElementById("applist").innerHTML += `security_level = ${cbObject.value} <br/>`;
+        },
+        onFailure: function (err) {}
+      });
+    };
+
+    // Enable debug mode and display debug info
+    const setDebugSetting = () => {
+      console.log("debug is enabled.");
+      let ip_address = "";
+      idcap.request("idcap://network/configuration/get", {
+        parameters: {},
+        onSuccess: function (cbObject) {
+          ip_address = cbObject.wired.ipAddress;
+        },
+        onFailure: function (err) {}
+      });
+      idcap.request("idcap://configuration/property/set", {
+        parameters: { key: "browser_debug_mode", value: "1" },
+        onSuccess: function () {
+          document.getElementById("applist").innerHTML += `Debug mode: On! URL= ${ip_address}:2345 <br/>`;
+        },
+        onFailure: function (err) {}
+      });
+    };
+
+    // Destroy a running application by appId
+    const destroyApplication = (appId) => {
+      idcap.request("idcap://application/destroy", {
+        parameters: { id: appId },
+        onSuccess: function () {
+          document.getElementById("applist").innerHTML += `${appId} was destroyed. <br/>`;
+        },
+        onFailure: function (f) {
+          document.getElementById("applist").innerHTML += `${appId} was not destroyed. <br/>`;
+          console.log("onFailure : errorMessage = " + f.errorMessage);
+        }
+      });
+    };
+
+    // Trigger TV checkout process
+    const trigger_checkout = () => {
+      destroyApplication("netflix");
+      destroyApplication("youtube.leanback.v4");
+      idcap.request("idcap://tv/checkout/request", {
+        onSuccess: function () {
+          document.getElementById("applist").innerHTML += `TV Checked out now! <br/>`;
+        },
+        onFailure: function (f) {
+          console.log("onFailure : errorMessage = " + f.errorMessage);
+        }
+      });
+    };
+
+    // Calculate delay and trigger checkout if within 30 seconds
+    const checkout_delay = () => {
+      const now = new Date();
+      millisTillCheckout = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, min, 0) - now;
+      if ((millisTillCheckout > 0) && (millisTillCheckout < 30000)) {
+        trigger_checkout();
+      } else {
+        console.log(`TV will checkout in ${millisTillCheckout} msec`);
+      }
+    };
+
+    // Schedule checkout at the specified time
+    function checkout_schedule() {
+      if (hour === 99) {
+        // If hour is not set, checkout immediately
+        trigger_checkout();
+      } else {
+        const now = new Date();
+        millisTillCheckout = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, min, 0) - now;
+        if (millisTillCheckout < 0) {
+          millisTillCheckout += 86400000; // If time has passed, schedule for tomorrow
+        }
+        document.getElementById("applist").innerHTML += `TV will check out in ${millisTillCheckout} msec! <br/>`;
+        setTimeout(trigger_checkout, millisTillCheckout);
+      }
+    }
+
+    // Initialize app: parse query params, set debug, and schedule checkout
+    function init() {
+      const searchParams = new URLSearchParams(window.location.search);
+      debugOption = searchParams.get('debug') ?? "off";
+      hour = Number(searchParams.get('hour') ?? 99);
+      min = Number(searchParams.get('min') ?? 0);
+      document.getElementById("applist").innerHTML += `debugOption = ${debugOption} <br/>`;
+      document.getElementById("applist").innerHTML += `checkout at ${hour}:${min} <br/>`;
+      if (debugOption === "on") {
+        setTimeout(getCurrentSetting, 2000);
+        setTimeout(setDebugSetting, 3000);
+      } else {
+        document.getElementsByTagName("body")[0].style.display = "none";
+      }
+      setTimeout(checkout_schedule, 4000);
+    }
+  </script>
+</body>
+</html>
