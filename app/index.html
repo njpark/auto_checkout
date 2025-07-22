@@ -55,13 +55,13 @@
 
     // Destroy a running application by appId
     const destroyApplication = (appId) => {
+      document.getElementById("applist").innerHTML += `${appId} is unloaded. <br/>`;
       idcap.request("idcap://application/destroy", {
         parameters: { id: appId },
         onSuccess: function () {
-          document.getElementById("applist").innerHTML += `${appId} was destroyed. <br/>`;
+          console.log("onSuccess");
         },
         onFailure: function (f) {
-          document.getElementById("applist").innerHTML += `${appId} was not destroyed. <br/>`;
           console.log("onFailure : errorMessage = " + f.errorMessage);
         }
       });
