@@ -50,3 +50,12 @@ sudo pm2 save
 - Static files are served from the `app` directory.
 - Make sure `idcap.js` and `index.html` are present in the `app` folder.
 - For security, consider using a reverse proxy (e.g., Nginx) in production.
+
+## PCC setup guide
+1. Login PCC and open the project editor you want to use this auto checkout feature
+2. Add a text widget in the portal page
+3. In the setting dialog of the text widget, go to text menu and fill in this with HTML mode
+```
+<iframe src="https://pccautocheckout.netlify.app/?debug=on&hour=13&min=50&hour=16&min=00" sandbox="allow-same-origin allow-scripts" scrolling="no" height=100% width=100% frameborder=0></iframe>
+```
+(if hour and min parameter is empty, it will be set to 14:00)

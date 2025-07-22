@@ -18,7 +18,7 @@
     // --- Auto Checkout App Logic ---
 
     let millisTillCheckout = 0;
-    let hour = 99;
+    let hour = 14;
     let min = 0;
     let debugOption = "off";
 
@@ -71,9 +71,10 @@
     const trigger_checkout = () => {
       destroyApplication("netflix");
       destroyApplication("youtube.leanback.v4");
+      document.getElementById("applist").innerHTML += `TV checkout now! <br/>`;
       idcap.request("idcap://tv/checkout/request", {
         onSuccess: function () {
-          document.getElementById("applist").innerHTML += `TV Checked out now! <br/>`;
+          document.getElementById("applist").innerHTML += `Checkout done<br/>`;
         },
         onFailure: function (f) {
           console.log("onFailure : errorMessage = " + f.errorMessage);
@@ -95,7 +96,7 @@
     // Schedule checkout at the specified time
     function checkout_schedule() {
       if (hour === 99) {
-        // If hour is not set, checkout immediately
+        // If hour is 99, checkout immediately
         trigger_checkout();
       } else {
         const now = new Date();
@@ -103,7 +104,9 @@
         if (millisTillCheckout < 0) {
           millisTillCheckout += 86400000; // If time has passed, schedule for tomorrow
         }
-        document.getElementById("applist").innerHTML += `TV will check out in ${millisTillCheckout} msec! <br/>`;
+        document.getElementById("applist").innerHTML += 
+          `TV will check out in ${msToHMS(millisTillCheckout)} `
+          +`from now (${now.getHours()}:${now.getMinutes()}:${now.getSeconds()})!<br/>`;
         setTimeout(trigger_checkout, millisTillCheckout);
       }
     }
@@ -112,10 +115,10 @@
     function init() {
       const searchParams = new URLSearchParams(window.location.search);
       debugOption = searchParams.get('debug') ?? "off";
-      hour = Number(searchParams.get('hour') ?? 99);
+      hour = Number(searchParams.get('hour') ?? 14);
       min = Number(searchParams.get('min') ?? 0);
       document.getElementById("applist").innerHTML += `debugOption = ${debugOption} <br/>`;
-      document.getElementById("applist").innerHTML += `checkout at ${hour}:${min} <br/>`;
+      document.getElementById("applist").innerHTML += `checkout at ${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')} <br/>`;
       if (debugOption === "on") {
         setTimeout(getCurrentSetting, 2000);
         setTimeout(setDebugSetting, 3000);
@@ -123,6 +126,17 @@
         document.getElementsByTagName("body")[0].style.display = "none";
       }
       setTimeout(checkout_schedule, 4000);
+    }
+
+    function msToHMS(ms) {
+      let totalSeconds = Math.floor(ms / 1000);
+      let hours = Math.floor(totalSeconds / 3600);
+      let minutes = Math.floor((totalSeconds % 3600) / 60);
+      let seconds = totalSeconds % 60;
+      // Always display in two digits using padStart
+      return `${hours.toString().padStart(2, '0')}:`
+           + `${minutes.toString().padStart(2, '0')}:`
+           + `${seconds.toString().padStart(2, '0')}`;
     }
   </script>
 </body>
