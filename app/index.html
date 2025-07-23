@@ -114,9 +114,9 @@
     // Initialize app: parse query params, set debug, and schedule checkout
     function init() {
       const searchParams = new URLSearchParams(window.location.search);
-      debugOption = searchParams.get('debug') ?? "off";
-      hour = Number(searchParams.get('hour') ?? 14);
-      min = Number(searchParams.get('min') ?? 0);
+      debugOption = searchParams.get('debug') || "off";
+      hour = Number(searchParams.get('hour') || 14);
+      min = Number(searchParams.get('min') || 0);
       document.getElementById("applist").innerHTML += `debugOption = ${debugOption} <br/>`;
       document.getElementById("applist").innerHTML += `checkout at ${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')} <br/>`;
       if (debugOption === "on") {
