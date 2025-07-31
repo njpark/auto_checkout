@@ -5,15 +5,20 @@
 ### 1. Prerequisites
 - AWS EC2 instance running Ubuntu (tested on 20.04/22.04)
 - Node.js (v14 or higher) and npm installed
+- Git installed
 - Port 80 open in your EC2 security group
 
-### 2. Install Node.js (if not installed)
+### 2. Install Node.js and Git (if not installed)
 ```
 sudo apt update
-sudo apt install -y nodejs npm
+sudo apt install -y nodejs npm git
 ```
 
 ### 3. Clone or upload this project to your EC2 instance
+
+```
+git clone https://github.com/njpark/auto_checkout.git
+```
 
 ### 4. Install dependencies
 ```
@@ -56,6 +61,6 @@ sudo pm2 save
 2. Add a text widget in the portal page
 3. In the setting dialog of the text widget, go to text menu and fill in this with HTML mode
 ```
-<iframe src="https://pccautocheckout.netlify.app/?debug=on&hour=13&min=50&hour=16&min=00" sandbox="allow-same-origin allow-scripts" scrolling="no" height=100% width=100% frameborder=0></iframe>
+<iframe src="http://[EC2_PUBLIC_IP]/autocheckout?debug=on&hour=13&min=50" sandbox="allow-same-origin allow-scripts" scrolling="no" height=100% width=100% frameborder=0></iframe>
 ```
 (if hour and min parameter is empty, it will be set to 14:00)
