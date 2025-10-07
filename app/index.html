@@ -67,10 +67,39 @@
       });
     };
 
+    // Destroy all applications
+    const destroyAllApplications = () => {
+      idcap.request( "idcap://application/list" , {
+          "parameters": {},
+          "onSuccess": function (s) {
+              console.log("onSuccess : list length = " + s.list.length);
+              const appIdList = s.list.map((i) => {
+                const appId = i.appId;
+                idcap.request("idcap://application/destroy", {
+                  parameters: { id: appId },
+                  onSuccess: function () {
+                    console.log(`${appId} is unloading...onSuccess`);
+                    document.getElementById("applist").innerHTML += `${appId} is unloading...onSuccess<br/>`;
+                  },
+                  onFailure: function (f) {
+                    console.log("onFailure : errorMessage = " + f.errorMessage);
+                  }
+                });
+                return appId;
+              });
+              console.log(appIdList);
+          },
+          "onFailure": function (err) {
+              console.log("onFailure : errorMessage = " + err.errorMessage);
+          }
+      });
+    };
+
     // Trigger TV checkout process
     const trigger_checkout = () => {
-      destroyApplication("netflix");
-      destroyApplication("youtube.leanback.v4");
+      // destroyApplication("netflix");
+      // destroyApplication("youtube.leanback.v4");
+      destroyAllApplications();
       document.getElementById("applist").innerHTML += `TV checkout now! <br/>`;
       idcap.request("idcap://tv/checkout/request", {
         onSuccess: function () {
